@@ -47,49 +47,49 @@ struct ElementValue {
       return *this;
     }
     
-    bool getBool() {
+    bool getBool() const {
       return data.boolValue;
     }
 
-    const char* getString() {
+    const char* getString() const {
       return data.stringValue;
     }
 
-    float getFloat() {
+    float getFloat() const {
       return data.numValue;
     }
 
-    long getInt() {
+    long getInt() const {
       return (long)data.numValue;
     }
 
-    bool isInt() {
+    bool isInt() const {
       return type == Type_Int;
     }
 
-    bool isFloat() {
+    bool isFloat() const {
       return type == Type_Float;
     }
 
-    bool isString() {
+    bool isString() const {
       return type == Type_String;
     }
 
-    bool isBool() {
+    bool isBool() const {
       return type == Type_Bool;
     }
 
-    bool isNull() {
+    bool isNull() const {
       return type == Type_Null;
     }
     
-    char* toString(char* buffer) {
+    char* toString(char* buffer, int maxLength) {
       if(isInt()) {
-        sprintf(buffer, "%ld", getInt()); // long int
+        snprintf(buffer, maxLength, "%ld", getInt()); // long int
       } else if(isFloat()) {
-        sprintf(buffer, "%f", getFloat());
+        snprintf(buffer, maxLength, "%f", getFloat());
       } else if(isString()) {
-        sprintf(buffer, "\"%s\"", getString()); // Note: This adds "'s (quote symbols) either side of the actual string value.
+        snprintf(buffer, maxLength, "\"%s\"", getString()); // Note: This adds "'s (quote symbols) either side of the actual string value.
       } else if(isBool()) {
         strcpy(buffer, getBool() ? "true" : "false");
       } else if(isNull()) {

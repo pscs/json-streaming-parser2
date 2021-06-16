@@ -25,15 +25,15 @@ SOFTWARE.
 #include <Arduino.h>
 #include "ElementPath.h"
 
-int ElementSelector::getIndex() {
+int ElementSelector::getIndex() const {
   return index;
 }
     
-const char* ElementSelector::getKey() {
+const char* ElementSelector::getKey() const {
   return key;
 }
 
-bool ElementSelector::isObject() {
+bool ElementSelector::isObject() const {
   return index < 0;
 }
 
@@ -56,15 +56,25 @@ void ElementSelector::step() {
   index++;
 }
 
-void ElementSelector::toString(char* buffer) {
+int ElementSelector::toString(char* buffer, int maxLength) const {
+  int len = strlen(key);
   if (index >= 0) {
-    sprintf(buffer, "%s[%d]", buffer, index);
+    len += 3;
+    if (len >= maxLength - 1) {
+      return -1;
+    }
+    snprintf(buffer, maxLength, "%s[%d]", buffer, index);
+    return strlen(buffer);
   } else {
-    strcat(buffer, key);
+    if (len >= maxLength - 1) {
+      return -1;
+    }
+    strcpy(buffer, key);
+    return len;
   }
 }
 
-ElementSelector* ElementPath::get(int index) {
+const ElementSelector* ElementPath::get(int index) const {
   if (index >= count
       || (index < 0 && (index += count - 1) < 0))
     return NULL;
@@ -72,39 +82,31 @@ ElementSelector* ElementPath::get(int index) {
   return &selectors[index];
 }
 
-int ElementPath::getCount() {
-  return count;
-}
-
-ElementSelector* ElementPath::getCurrent() {
-  return current;
-}
-
-int ElementPath::getIndex() {
+int ElementPath::getIndex() const {
   return getIndex(current);
 }
 
-int ElementPath::getIndex(int index) {
+int ElementPath::getIndex(int index) const {
   return getIndex(get(index));
 }
 
-int ElementPath::getIndex(ElementSelector* selector) {
+int ElementPath::getIndex(const ElementSelector* selector) {
   return selector != NULL ? selector->index : -1;
 }
 
-const char* ElementPath::getKey() {
+const char* ElementPath::getKey() const {
   return current != NULL ? current->key : "\0";
 }
 
-const char* ElementPath::getKey(int index) {
+const char* ElementPath::getKey(int index) const {
   return getKey(get(index));
 }
 
-const char* ElementPath::getKey(ElementSelector* selector) {
+const char* ElementPath::getKey(const ElementSelector* selector) {
   return selector != NULL ? selector->key : "\0";
 }
 
-ElementSelector* ElementPath::getParent() {
+const ElementSelector* ElementPath::getParent() const {
   return get(-1);
 }
 
@@ -118,14 +120,27 @@ void ElementPath::push() {
   (current = &selectors[count++])->reset();
 }
 
-void ElementPath::toString(char* buffer) {
+int ElementPath::toString(char* buffer, int maxLength) const {
+  int pos = 0;
+  buffer[0] = 0;
   if (count <= 0)
-    return;
+    return 0;
 
   for(int index = 0; index < count; index++) {
     if(index > 0 && selectors[index].isObject()) {
-      strcat(buffer, "."); 
+      if (pos >= maxLength - 1) {
+        return -1;
+      }
+      strcat(buffer, ".");
+      pos++;
     }
-    selectors[index].toString(buffer);
+    printf("EP toStr %d %d\n", pos, maxLength - pos);
+    int len = selectors[index].toString(buffer + pos, maxLength - pos);
+    if (len == -1) {
+      return -1;
+    } else {
+      pos += len;
+    }
   }
+  return pos;
 }

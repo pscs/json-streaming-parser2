@@ -36,17 +36,17 @@ class ElementSelector {
     char key[20];
 
   public:
-    int getIndex();
+    int getIndex() const;
     
-    const char* getKey();
+    const char* getKey() const;
     
-    bool isObject();
+    bool isObject() const;
     
     /*
       Builds the string representation of this node position within 
       its parent.
     */
-    void toString(char* buffer);
+    int toString(char* buffer, int maxLength) const;
 
   private:    
     void reset();
@@ -78,33 +78,40 @@ class ElementPath {
     /*
       Gets the element selector at the given level.
     */
-    ElementSelector* get(int index);
+    const ElementSelector* get(int index) const;
     
-    int getCount();
+    int getCount() const {
+      return count;
+    }
     
     /*
       Gets current element selector.
     */
-    ElementSelector* getCurrent();
-    
+    const ElementSelector* getCurrent() const {
+      return current;
+    }
+
+    ElementSelector* getCurrent() {
+      return current;
+    } 
     /*
       Gets current element's index (in case of array).
     */
-    int getIndex();
+    int getIndex() const;
 
-    int getIndex(int index);
+    int getIndex(int index) const;
 
     /*
       Gets current element's key (in case of object).
     */
-    const char* getKey();
+    const char* getKey() const;
 
-    const char* getKey(int index);
+    const char* getKey(int index) const;
 
     /*
       Gets parent element selector.
     */
-    ElementSelector* getParent();
+    const ElementSelector* getParent() const;
     
     /*
       Builds the full path corresponding to the current node position.
@@ -121,12 +128,12 @@ class ElementPath {
         ...
       }
     */    
-    void toString(char* buffer);
+    int toString(char* buffer, int maxLength) const;
 
   private:
-    int getIndex(ElementSelector* selector);
+    static int getIndex(const ElementSelector* selector);
     
-    const char* getKey(ElementSelector* selector);
+    static const char* getKey(const ElementSelector* selector);
 
     void pop();
     
